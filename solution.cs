@@ -1,85 +1,58 @@
 ```C#
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-
-class Program
+while (true)
 {
-    static void Main(string[] args)
+    negativePoints++;
+
+    if (Console.KeyAvailable)
     {
-        byte right = 0;
-        byte left = 1;
-        byte down = 2;
-        byte up = 3;
-        int lastFoodTime = 0;
-        int foodDisappearTime = 8000;
-        int negativePoints = 0;
-
-        Position[] directions = new Position[]
+        ConsoleKeyInfo userInput = Console.ReadKey();
+        if (userInput.Key == ConsoleKey.LeftArrow)
         {
-            new Position(0, 1), // right
-            new Position(0, -1), // left
-            new Position(1, 0), // down
-            new Position(-1, 0), // up
-        };
-
-        double sleepTime = 100;
-        int direction = right;
-        Random randomNumbersGenerator = new Random();
-        Console.BufferHeight = Console.WindowHeight;
-
-        List<Position> obstacles = new List<Position>()
-        {
-            new Position(12, 12),
-            new Position(14, 20),
-            new Position(7, 7),
-            new Position(19, 19),
-            new Position(6, 9),
-        };
-
-        foreach (Position obstacle in obstacles)
-        {
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.SetCursorPosition(obstacle.col, obstacle.row);
-            Console.Write("=");
+            if (direction != right) direction = left;
         }
-
-        Queue<Position> snakeElements = new Queue<Position>();
-        for (int i = 0; i <= 5; i++)
+        if (userInput.Key == ConsoleKey.RightArrow)
         {
-            snakeElements.Enqueue(new Position(0, i));
+            if (direction != left) direction = right;
         }
-
-        Position food;
-        do
+        if (userInput.Key == ConsoleKey.UpArrow)
         {
-            food = new Position(randomNumbersGenerator.Next(0, Console.WindowHeight),
-                randomNumbersGenerator.Next(0, Console.WindowWidth));
+            if (direction != down) direction = up;
         }
-        while (snakeElements.Contains(food) || obstacles.Contains(food));
-
-        Console.SetCursorPosition(food.col, food.row);
-        Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.Write("@");
-
-        foreach (Position position in snakeElements)
+        if (userInput.Key == ConsoleKey.DownArrow)
         {
-            Console.SetCursorPosition(position.col, position.row);
-            Console.ForegroundColor = ConsoleColor.DarkGray;
-            Console.Write("*");
+            if (direction != up) direction = down;
         }
     }
 
-    struct Position
+    Position snakeHead = snakeElements.Last();
+    Position nextDirection = directions[direction];
+
+    Position snakeNewHead = new Position(snakeHead.row + nextDirection.row,
+        snakeHead.col + nextDirection.col);
+
+    if (snakeNewHead.row < 0 ||
+        snakeNewHead.col < 0 ||
+        snakeNewHead.row >= Console.WindowHeight ||
+        snakeNewHead.col >= Console.WindowWidth ||
+        snakeElements.Contains(snakeNewHead) ||
+        obstacles.Contains(snakeNewHead))
     {
-        public int row;
-        public int col;
-        public Position(int row, int col)
-        {
-            this.row = row;
-            this.col = col;
-        }
+        Console.SetCursorPosition(0, 0);
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine("Game over!");
+        int userPoints = (snakeElements.Count - 6) * 100 - negativePoints;
+        if (userPoints < 0) userPoints = 0;
+        userPoints = Math.Max(userPoints, 0);
+        Console.WriteLine("Your points are: {0}", userPoints);
+        return;
     }
+
+    snakeElements.Enqueue(snakeNewHead);
+    Console.SetCursorPosition(snakeNewHead.col, snakeNewHead.row);
+    Console.ForegroundColor = ConsoleColor.DarkGray;
+    if (direction == right) Console.Write("*");
+    if (direction == left) Console.Write("*");
+    if (direction == up) Console.Write("*");
+    if (direction == down) Console.Write("*");
 }
 ```
